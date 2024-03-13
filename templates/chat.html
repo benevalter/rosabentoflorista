@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+
+        .chat-header {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 10px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .chat-messages {
+            padding: 10px;
+            overflow-y: scroll;
+            max-height: 300px;
+        }
+
+        .message-container {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 20px;
+            background-color: #e6e6e6;
+            max-width: 70%;
+        }
+
+        .message {
+            margin: 0;
+            word-wrap: break-word; /* Adicionado para que as palavras longas sejam quebradas */
+        }
+
+        .author {
+            background-color: #4CAF50;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .message a {
+            color: #0066cc;
+            text-decoration: underline;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            var socket = io.connect('http://localhost:5000');
+            socket.on('update_messages', function(data) {
+                var messagesContainer = document.querySelector('.chat-messages');
+                var messageContainer = document.createElement('div');
+                messageContainer.classList.add('message-container');
+                
+                // Extrair o autor e o conteúdo da mensagem
+                var authorIndex = data.indexOf('Autor:');
+                var messageIndex = data.indexOf(', Conteúdo:');
+                var author = data.substring(authorIndex + 6, messageIndex);
+                var message = data.substring(messageIndex + 11);
+
+                // Criar elementos HTML para o autor e a mensagem
+                var authorElement = document.createElement('div');
+                authorElement.classList.add('author');
+                authorElement.innerText = author;
+
+                var messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                // Substituir URLs por links clicáveis
+                messageElement.innerHTML = message.replace(
+                    /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig, 
+                    '<a href="$1" target="_blank">$1</a>'
+                );
+
+                // Adicionar elementos HTML à mensagem
+                messageContainer.appendChild(authorElement);
+                messageContainer.appendChild(messageElement);
+                
+                // Adicionar a mensagem à lista de mensagens
+                messagesContainer.appendChild(messageContainer);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">Chat</div>
+        <div class="chat-messages">
+            {% for message in messages %}
+            <div class="message-container">
+                <div class="author">{{ message.author }}</div>
+                <div class="message">{{ message.body | safe }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
