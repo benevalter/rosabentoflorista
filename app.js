@@ -27,7 +27,7 @@ client.on('message', async (message) => {
     }
     // Enviar os dados da mensagem para o seu próprio webhook
     try {
-        await axios.post('http://localhost:5000/', {
+        await axios.post('https://benevalter.app.n8n.cloud/webhook/69815a1a-e479-4b3c-9369-ac77d6a0a37d', {
             from: message.from,
             to: message.to,
             body: message.body,
